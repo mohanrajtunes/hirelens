@@ -8,4 +8,5 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
     path('api/resumes/', include('resumes.urls')),
     path('api/ai/', include('ai.urls')),
+    path('api/jobs/', include('jobs.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
