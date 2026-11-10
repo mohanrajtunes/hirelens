@@ -62,3 +62,24 @@ def llm_analysis(resume_text, job_text):
         temperature=0.2,
     )
     return json.loads(resp.choices[0].message.content)
+
+def generate_cover_note(resume_text, job_description, tone='professional'):
+    client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+    system = (
+        'You write short job application notes for a fresher developer. '
+        f'Tone: {tone}. Max 120 words. Start with "Hi," and end with the '
+        'candidate name. Mention 2-3 relevant projects or skills from the '
+        'resume that match the job. Use ONLY facts in the resume. Never '
+        'invent experience or skills. No placeholders like [Company]. '
+        'Reply with plain text only.'
+    )
+    user = f'RESUME:\n{resume_text[:6000]}\n\nJOB DESCRIPTION:\n{job_description[:6000]}'
+    resp = client.chat.completions.create(
+        model=MODEL,
+        messages=[
+            {'role': 'system', 'content': system},
+            {'role': 'user', 'content': user},
+        ],
+        temperature=0.5,
+    )
+    return resp.choices[0].message.content.strip()

@@ -4,8 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from resumes.models import Resume
-from .services import keyword_match, llm_analysis
-
+from .services import keyword_match, llm_analysis, generate_cover_note
 
 class MatchView(APIView):
     permission_classes = [IsAuthenticated]
@@ -49,3 +48,32 @@ class MatchView(APIView):
             'ai_missing_skills': ai.get('missing_skills', []),
             'tips': ai.get('tips', []),
         })
+
+class CoverNoteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        resume_id = request.data.get('resume_id')
+        job_description = (request.data.get('job_description') or '').strip()
+        tone = request.data.get('tone', 'professional')
+
+        if not resume_id or not job_description:
+            return Response(
+                {'error': 'resume_id and job_description are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            resume = Resume.objects.get(pk=resume_id, user=request.user)
+        except (Resume.DoesNotExist, ValueError):
+            return Response({'error': 'Resume not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            note = generate_cover_note(resume.text, job_description, tone)
+        except Exception as e:
+            return Response(
+                {'error': f'AI call failed: {e}'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        return Response({'cover_note': note})
