@@ -106,3 +106,4 @@ Not tested: real backend, real phone, reduced motion.
 - New styles are at the bottom of `styles/theme.css` (section "v7").
 Not tested: real backend, real phone.
 - v7.1: closing band on Home shows a small tracker board (one card moves Saved to Applied). App navigation is at the top from 900px wide, bottom dock on phones. Resume page reveals behind a scan line on load. Home animation rebuilds when the window crosses 1000px (`wide` state in Home.jsx).
+- v7.2: job post on the result page is collapsed with a 'Show full post' button; cover note prompt in backend/ai/services.py rewritten (80-110 words, no links, leads with best match, one honest gap).

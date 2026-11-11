@@ -65,6 +65,47 @@ def llm_analysis(resume_text, job_text):
 
 def generate_cover_note(resume_text, job_description, tone='professional'):
     client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+    tones = {
+        'professional': 'Plain, direct and polite. No exclamation marks.',
+        'friendly': 'Warm and natural, like a message to a person you respect. At most one exclamation mark.',
+        'confident': 'Assured and specific. State what you built and what it did, without bragging words.',
+    }
+    system = (
+        'You write a short note that a job applicant sends with their application. '
+        'You are given their resume and the job description.\n\n'
+        'How to write it:\n'
+        '- 80 to 110 words, in 2 short paragraphs, then the name on its own line.\n'
+        '- Start with "Hi," on its own line.\n'
+        '- First sentence: the one skill or project from the resume that fits this job best, '
+        'and what it did. Name the job title from the job description if it has one.\n'
+        '- Then at most two more pieces of evidence from the resume, each tied to something the job asks for.\n'
+        '- If the job asks for an important skill that is not in the resume, say so in one honest clause '
+        'and that the applicant is learning it. Mention at most one such skill.\n'
+        '- Last sentence: a plain close, such as being glad to talk further.\n'
+        '- End with the applicant name exactly as written in the resume.\n\n'
+        'Rules:\n'
+        '- Use ONLY facts found in the resume. Never invent experience, skills, numbers or companies.\n'
+        '- Do not mention links, websites, a portfolio, GitHub, email or phone numbers.\n'
+        '- Do not list skills in a row. Do not repeat the job description back.\n'
+        '- Avoid filler such as "I am excited to apply", "passionate", "I believe I am a great fit", '
+        '"aligns with", "I look forward to contributing".\n'
+        '- No placeholders like [Company]. No headings, no bullet points, plain text only.\n\n'
+        f'Tone: {tones.get(tone, tones["professional"])}'
+    )
+    user = f'RESUME:\n{resume_text[:6000]}\n\nJOB DESCRIPTION:\n{job_text[:6000]}'
+    resp = client.chat.completions.create(
+        model=MODEL,
+        messages=[
+            {'role': 'system', 'content': system},
+            {'role': 'user', 'content': user},
+        ],
+        response_format={'type': 'json_object'},
+        temperature=0.2,
+    )
+    return json.loads(resp.choices[0].message.content)
+
+def generate_cover_note(resume_text, job_description, tone='professional'):
+    client = Groq(api_key=os.getenv('GROQ_API_KEY'))
     system = (
         'You write short job application notes for a fresher developer. '
         f'Tone: {tone}. Max 120 words. Start with "Hi," and end with the '

@@ -28,6 +28,8 @@ export default function Match() {
   const [noteBusy, setNoteBusy] = useState(false)
   const [noteError, setNoteError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [open, setOpen] = useState(false) // the full job post is shown
+  const post = useRef(null)
 
   const [job, setJob] = useState({ company: '', role: '', link: '' })
   const [saveState, setSaveState] = useState('idle') // idle | busy | done
@@ -92,6 +94,26 @@ export default function Match() {
     { scope: root, dependencies: [live] },
   )
 
+  // The long job post opens and closes smoothly.
+  function togglePost() {
+    const el = post.current
+    const next = !open
+    setOpen(next)
+    if (!motionOK()) return
+    const from = el.offsetHeight
+    gsap.set(el, { maxHeight: 'none', height: 'auto' })
+    const full = el.scrollHeight
+    gsap.fromTo(el, { height: from, maxHeight: 'none' }, { height: next ? full : 132, duration: 0.7, ease: 'power3.inOut', onComplete: () => gsap.set(el, { clearProps: 'height,maxHeight' }) })
+  }
+
+  // A new note fades up, line by line of the page around it.
+  useGSAP(
+    () => {
+      if (note && noteTone && motionOK()) gsap.from('.note, .note__meta', { y: 16, autoAlpha: 0, duration: 0.6, ease: 'expo.out', stagger: 0.08 })
+    },
+    { scope: root, dependencies: [noteBusy] },
+  )
+
   async function upload(e) {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -133,6 +155,7 @@ export default function Match() {
       const text = jd.trim()
       const { data } = await api.post('/ai/match/', { resume_id: resumeId, job_description: text })
       setResult({ ...data, jd: text, resumeId })
+      setOpen(false)
       setNote('')
       setNoteError('')
       setSaveState('idle')
@@ -320,9 +343,15 @@ export default function Match() {
                 <span className="chip chip--miss">missing</span>
               </p>
             </div>
-            <p className="post">
+            <p className={`post${open ? ' is-open' : ''}`} ref={post}>
               <Marked text={live.jd} hits={live.matched_skills} misses={live.missing_skills} />
             </p>
+            {live.jd.length > 420 && (
+              <button type="button" className="post__more" onClick={togglePost} aria-expanded={open}>
+                {open ? 'Show less' : 'Show full post'}
+                <Icon name="arrow" size={16} />
+              </button>
+            )}
             <p className="summary">{live.summary}</p>
           </div>
 

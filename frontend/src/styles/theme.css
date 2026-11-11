@@ -169,3 +169,17 @@ textarea.note:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(255 21
   .app__top { padding-top: 22px; padding-bottom: 14px; }
   .app__main { padding-bottom: 60px; }
 }
+
+/* the long job post is collapsed until asked for */
+.post { position: relative; max-height: 132px; overflow: hidden; }
+.post::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: linear-gradient(transparent, #fff); pointer-events: none; transition: opacity 0.4s; }
+.post.is-open { max-height: none; }
+.post.is-open::after { opacity: 0; }
+.post__more { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 8px 14px; border-radius: 99px; border: 1px solid var(--hair); background: #fff; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; transition: background 0.2s, border-color 0.2s, translate 0.2s; }
+.post__more:hover { background: var(--yellow); border-color: var(--ink); translate: 0 -1px; }
+.post__more .icon { rotate: 90deg; transition: rotate 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.post__more[aria-expanded='true'] .icon { rotate: -90deg; }
+.chip, .tags li { transition: translate 0.2s, box-shadow 0.2s; }
+.tags li:hover { translate: 0 -2px; }
+.read .list li { transition: translate 0.25s; }
+.read .list li:hover { translate: 4px 0; }
