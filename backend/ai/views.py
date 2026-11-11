@@ -8,6 +8,7 @@ from .services import keyword_match, llm_analysis, generate_cover_note
 
 class MatchView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai'
 
     def post(self, request):
         resume_id = request.data.get('resume_id')
@@ -51,6 +52,7 @@ class MatchView(APIView):
 
 class CoverNoteView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai'
 
     def post(self, request):
         resume_id = request.data.get('resume_id')
