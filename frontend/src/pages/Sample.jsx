@@ -56,6 +56,8 @@ export default function Sample() {
           setScore(live.final_score)
         }, null, '-=0.5')
         .to('.read > *', { y: 0, autoAlpha: 1, duration: 0.7, ease: 'expo.out', stagger: 0.08 }, '<0.1')
+        .from('.read .post .mk', { scale: 0.3, autoAlpha: 0, duration: 0.5, ease: 'back.out(2.5)', stagger: 0.035 }, '-=0.35')
+        .from('.read__cols .chip--miss', { scale: 0.5, autoAlpha: 0, duration: 0.45, ease: 'back.out(2.2)', stagger: 0.04 }, '<0.15')
     },
     { scope: root, dependencies: [live] },
   )

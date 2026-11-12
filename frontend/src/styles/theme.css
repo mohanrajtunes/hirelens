@@ -193,3 +193,18 @@ textarea.note:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(255 21
 .sample__own .quiet { color: #3a3320; margin-top: 6px; }
 .sample__note { margin-top: 26px; text-align: center; font-size: 13.5px; color: var(--faint); }
 .app__main.sample { padding-bottom: 70px; }
+
+/* ---- v9: skills pop as the scan finds them; the whole resume scrolls ---- */
+.pm { display: inline-block; position: relative; }
+.post .mk { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) {
+  .pm.on { animation: pm-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .pm.on::after { content: ''; position: absolute; inset: -0.3em; border-radius: 0.5em; border: 2px solid var(--lime-t); animation: pm-ring 0.7s ease-out both; pointer-events: none; }
+}
+@keyframes pm-pop { 0% { transform: scale(1); } 40% { transform: scale(1.28); } 100% { transform: scale(1); } }
+@keyframes pm-ring { from { opacity: 0.9; transform: scale(0.8); } to { opacity: 0; transform: scale(1.5); } }
+.paper { max-height: none; }
+.paper__page { max-height: 560px; overflow-y: auto; overscroll-behavior: contain; }
+.paper .cv--text { padding-bottom: 64px; }
+.pm { padding: 0 0.14em; margin: 0 -0.04em; }
+.pm.on { box-shadow: none; }

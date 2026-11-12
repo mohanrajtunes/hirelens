@@ -109,7 +109,7 @@ export function TextDoc({ text, hits = [], name = 'resume.pdf' }) {
     <article className="cv cv--text">
       <p className="cv__file">{name}</p>
       <p className="cv__raw">
-        <Words text={(text || '').slice(0, 2400)} hits={hits} />
+        <Words text={text || ''} hits={hits} />
       </p>
     </article>
   )
