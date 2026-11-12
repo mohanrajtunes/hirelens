@@ -148,3 +148,20 @@
   .x-end h2 { font-size: clamp(2.4rem, 4.6vw, 4rem); }
   .x-cols { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* second hero button and the skills gap preview */
+.x-btn--line { background: transparent; color: var(--ink) !important; box-shadow: inset 0 0 0 1.5px var(--ink); }
+.x-btn--line:hover { background: var(--ink); color: #fff !important; }
+.x-gap { background: var(--paper, #f6f4ee); padding: clamp(64px, 8vw, 110px) 0; }
+.x-gap .x-wrap { display: grid; gap: 44px; align-items: center; }
+.x-gap h2 { font-size: clamp(2.2rem, 4.4vw, 3.5rem); letter-spacing: -0.04em; line-height: 1.02; font-weight: 620; }
+.x-gap p:not(.x-lab) { margin-top: 20px; font-size: 18px; line-height: 1.55; color: #4a4a40; max-width: 440px; }
+.x-gapscreen { background: rgb(255 255 255 / 0.6); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgb(13 17 16 / 0.08), 0 40px 60px -40px rgb(13 17 16 / 0.35); }
+.x-bars { padding: 22px 22px 26px; }
+.x-row { display: grid; grid-template-columns: 76px 1fr auto; gap: 14px; align-items: center; padding: 11px 0; font-size: 14px; }
+.x-row b { font-weight: 600; }
+.x-row em { font-style: normal; font-size: 12.5px; color: #7f857f; font-variant-numeric: tabular-nums; }
+.x-track { height: 12px; border-radius: 99px; background: #eef0eb; overflow: hidden; }
+.x-track i { display: block; height: 100%; width: calc(var(--w) * 100%); border-radius: 99px; background: var(--ink); transform-origin: 0 50%; }
+.x-row:first-of-type .x-track i { background: #e8590c; }
+@media (min-width: 1000px) { .x-gap .x-wrap { grid-template-columns: 1.15fr 1fr; gap: 72px; } }

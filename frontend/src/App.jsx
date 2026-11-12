@@ -5,6 +5,7 @@ import { TransitionProvider } from './lib/nav.jsx'
 import SiteShell from './pages/site/SiteShell.jsx'
 import Home from './pages/site/Home.jsx'
 import Auth from './pages/Auth.jsx'
+import Sample from './pages/Sample.jsx'
 import AppShell from './pages/app/AppShell.jsx'
 import Overview from './pages/app/Overview.jsx'
 import Match from './pages/app/Match.jsx'
@@ -28,6 +29,7 @@ export default function App() {
         <Route element={<SiteShell />}>
           <Route path="/" element={<Home />} />
         </Route>
+        <Route path="/sample" element={<Sample />} />
         <Route path="/login" element={<Auth mode="login" />} />
         <Route path="/register" element={<Auth mode="register" />} />
         <Route path="/app" element={<Private><AppShell /></Private>}>

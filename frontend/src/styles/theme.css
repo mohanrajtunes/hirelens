@@ -183,3 +183,13 @@ textarea.note:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgb(255 21
 .tags li:hover { translate: 0 -2px; }
 .read .list li { transition: translate 0.25s; }
 .read .list li:hover { translate: 4px 0; }
+
+/* the sample match page */
+.sample .seg--wide { display: flex; flex-wrap: wrap; width: 100%; margin-top: 6px; }
+.sample .seg--wide button { flex: 1 1 auto; }
+.sample__post { margin-top: 12px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--hair); background: #fbfaf6; font-size: 15px; line-height: 1.6; color: var(--ink); }
+.sample__own { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; background: var(--yellow); }
+.sample__own h2 { font-size: 1.5rem; letter-spacing: -0.02em; }
+.sample__own .quiet { color: #3a3320; margin-top: 6px; }
+.sample__note { margin-top: 26px; text-align: center; font-size: 13.5px; color: var(--faint); }
+.app__main.sample { padding-bottom: 70px; }

@@ -26,6 +26,13 @@ const BOARD = [
   ['Interview', [['API Developer', 77]]],
   ['Offer', []],
 ]
+// The skills gap preview: [skill, how many of 5 saved jobs ask for it].
+const GAP = [
+  ['Docker', 4],
+  ['AWS', 3],
+  ['Redis', 2],
+  ['Celery', 1],
+]
 const BEATS = [
   ['Every requirement, checked.', 'HireLens reads the job description and checks each requirement against your resume.'],
   ['One clear score.', 'A single number out of 100, with the skills you already have and the ones you are missing.'],
@@ -212,7 +219,7 @@ export default function Home() {
         gsap.from('.x-beat', { y: 30, autoAlpha: 0, duration: 1, ease: 'expo.out', stagger: 0.1, scrollTrigger: { trigger: '.x-beats', start: 'top 82%', once: true } })
       }
 
-      all('.x-dark h2, .x-end h2').forEach((h) =>
+      all('.x-dark h2, .x-gap h2, .x-end h2').forEach((h) =>
         SplitText.create(h, {
           type: 'lines',
           mask: 'lines',
@@ -234,6 +241,11 @@ export default function Home() {
           .to(card, { scale: 1, rotation: 0, boxShadow: '0 0 0 0 rgb(13 17 16 / 0)', duration: 0.3, ease: 'power2.out' })
           .to(q('.x-cols > div:nth-child(1) .x-card:not(.x-move)'), { y: () => -(card.offsetHeight + 8), duration: 0.5, ease: 'power3.out' }, '-=0.6')
       }
+      const gapAt = { trigger: '.x-gapscreen', start: 'top 78%', once: true }
+      gsap.from('.x-gapscreen', { y: 60, autoAlpha: 0, duration: 1.1, ease: 'expo.out', scrollTrigger: gapAt })
+      gsap.from('.x-row', { x: -24, autoAlpha: 0, duration: 0.8, ease: 'expo.out', stagger: 0.1, delay: 0.2, scrollTrigger: gapAt })
+      gsap.from('.x-track i', { scaleX: 0, duration: 1.3, ease: 'expo.out', stagger: 0.1, delay: 0.35, scrollTrigger: gapAt })
+      gsap.from('.x-gap p:not(.x-lab), .x-gap .x-cta', { y: 24, autoAlpha: 0, duration: 1, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: '.x-gap', start: 'top 70%', once: true } })
       gsap.from('.x-end p', { y: 24, autoAlpha: 0, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: '.x-end', start: 'top 70%', once: true } })
       gsap.from('.x-dark p, .x-end .x-cta', { y: 24, autoAlpha: 0, duration: 1, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: '.x-dark', start: 'top 65%', once: true } })
       gsap.fromTo('.x-list li', { '--draw': 0 }, { '--draw': 1, duration: 1.2, ease: 'expo.inOut', stagger: 0.12, scrollTrigger: { trigger: '.x-list', start: 'top 78%', once: true } })
@@ -283,7 +295,9 @@ export default function Home() {
                   <TLink to={start} className="x-btn x-btn--big magnet">
                     {status === 'in' ? 'Dashboard' : 'Get started, free'} <Arrow />
                   </TLink>
-                  {status !== 'in' && <TLink to="/login">Sign in</TLink>}
+                  <TLink to="/sample" className="x-btn x-btn--big x-btn--line">
+                    Try a sample match
+                  </TLink>
                 </div>
                 <div className="x-facts">
                   <div>
@@ -413,6 +427,43 @@ export default function Home() {
                 <em>Every application and its status on one board.</em>
               </li>
             </ol>
+          </div>
+        </section>
+
+        <section className="x-gap">
+          <div className="x-wrap">
+            <div className="x-screen x-gapscreen" aria-label="Example of the skills gap page">
+              <div className="x-win">
+                <div className="x-bar">
+                  <span>
+                    <Logo size={18} />
+                    Skills gap
+                  </span>
+                  <span className="x-pill">5 saved jobs</span>
+                </div>
+                <div className="x-bars">
+                  <p className="x-lab">Asked for most, not on your resume</p>
+                  {GAP.map(([skill, n]) => (
+                    <div className="x-row" key={skill}>
+                      <b>{skill}</b>
+                      <span className="x-track">
+                        <i style={{ '--w': n / 5 }} />
+                      </span>
+                      <em>{n} of 5 jobs</em>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div>
+              <h2>Know what to learn next.</h2>
+              <p>HireLens adds up the skills your saved jobs ask for and ranks the ones your resume does not have yet.</p>
+              <div className="x-cta">
+                <TLink to="/sample" className="x-btn x-btn--big magnet">
+                  Try a sample match <Arrow />
+                </TLink>
+              </div>
+            </div>
           </div>
         </section>
 
