@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from resumes.models import Resume
-from .services import keyword_match, llm_analysis, generate_cover_note
+from .services import analyze, generate_cover_note
 
 class MatchView(APIView):
     permission_classes = [IsAuthenticated]
@@ -25,30 +25,28 @@ class MatchView(APIView):
         except (Resume.DoesNotExist, ValueError):
             return Response({'error': 'Resume not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        kw_score, matched, missing = keyword_match(resume.text, job_description)
-
         try:
-            ai = llm_analysis(resume.text, job_description)
-            ai_score = max(0, min(100, int(ai.get('score', 0))))
+            result = analyze(resume.text, job_description)
         except Exception as e:
             return Response(
                 {'error': f'AI call failed: {e}'},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
-        final_score = round(0.4 * kw_score + 0.6 * ai_score)
+        final_score = round(0.4 * result['coverage'] + 0.6 * result['ai_score'])
 
         return Response({
             'final_score': final_score,
-            'keyword_score': kw_score,
-            'ai_score': ai_score,
-            'matched_skills': matched,
-            'missing_skills': missing,
-            'summary': ai.get('summary', ''),
-            'strengths': ai.get('strengths', []),
-            'ai_missing_skills': ai.get('missing_skills', []),
-            'tips': ai.get('tips', []),
+            'keyword_score': result['coverage'],
+            'ai_score': result['ai_score'],
+            'matched_skills': result['matched'],
+            'missing_skills': result['missing'],
+            'summary': result['summary'],
+            'strengths': result['strengths'],
+            'ai_missing_skills': [],
+            'tips': result['tips'],
         })
+
 
 class CoverNoteView(APIView):
     permission_classes = [IsAuthenticated]

@@ -6,103 +6,87 @@ from groq import Groq
 
 MODEL = 'openai/gpt-oss-120b'
 
-SKILLS = [
-    'python', 'django', 'django rest framework', 'drf', 'flask', 'fastapi',
-    'javascript', 'typescript', 'react', 'node.js', 'express', 'java', 'c++',
-    'sql', 'postgresql', 'mysql', 'mongodb', 'sqlite', 'redis',
-    'rest api', 'graphql', 'jwt', 'docker', 'kubernetes', 'aws', 'azure',
-    'gcp', 'git', 'github', 'linux', 'ci/cd', 'celery', 'rabbitmq',
-    'html', 'css', 'tailwind', 'pytest', 'unit testing', 'microservices',
-    'machine learning', 'llm', 'rag', 'langchain', 'pandas', 'numpy',
-    'agile', 'postman', 'swagger', 'spring boot', 'terraform', 'jenkins', 'nginx', 'kafka',
-    'elasticsearch', 'tensorflow', 'pytorch', 'scikit-learn',
-    'django-filter', 'select_for_update', 'cloudinary', 'vercel', 'render',
-    'next.js', 'vue', 'angular', 'golang', 'rust', 'php', 'laravel',
-]
+def _norm(text):
+    """Lowercase letters and digits only, single spaces, so quotes compare fairly."""
+    return re.sub(r'[^a-z0-9+#]+', ' ', str(text).lower()).strip()
 
 
-def extract_skills(text):
-    text = text.lower()
-    found = set()
-    for skill in SKILLS:
-        pattern = r'(?<![a-z0-9])' + re.escape(skill) + r'(?![a-z0-9])'
-        if re.search(pattern, text):
-            found.add(skill)
-    return found
+def _quoted_in(evidence, haystack):
+    """True if the quoted words really appear in the resume (haystack is padded with spaces)."""
+    parts = [_norm(p) for p in re.split(r'\.\.\.|…|\|', str(evidence or ''))]
+    parts = [p for p in parts if len(p) >= 2]
+    return bool(parts) and all(f' {p} ' in haystack for p in parts)
 
 
-def keyword_match(resume_text, job_text):
-    job_skills = extract_skills(job_text)
-    resume_skills = extract_skills(resume_text)
-    if not job_skills:
-        return 0, [], []
-    matched = sorted(job_skills & resume_skills)
-    missing = sorted(job_skills - resume_skills)
-    score = round(len(matched) / len(job_skills) * 100)
-    return score, matched, missing
+ANALYSIS_PROMPT = (
+    'You are a strict technical recruiter comparing a resume with a job description. '
+    'Reply ONLY with JSON in this exact shape: '
+    '{"score": <0-100 integer, overall fit>, "summary": "<2 sentences>", '
+    '"requirements": [{"options": ["..."], "importance": "required", "met": true, "evidence": "..."}], '
+    '"strengths": ["..."], "tips": ["..."]}.\n\n'
+    'Rules for requirements:\n'
+    '- List the skills, tools, languages and domains the job asks for: at most 15, most important first. '
+    'Skip years of experience, soft skills and generic words.\n'
+    '- If the job accepts any one of several options (for example "Java, Scala, or Python" or '
+    '"AWS, Azure, or GCP"), put them together in ONE requirement as its options. '
+    'Otherwise each requirement has one option.\n'
+    '- Use the job\'s own wording for options, 1 to 3 words each.\n'
+    '- importance is "preferred" when the job says plus, advantage, nice to have or bonus; otherwise "required".\n'
+    '- met is true only if the resume itself shows at least one option. evidence must be words copied '
+    'exactly from the resume. If you cannot copy exact words, set met to false and evidence to "".\n'
+    '- A related skill is not a match (JavaScript is not Java; SQL is not NoSQL).\n\n'
+    'Strengths: only things the resume states in plain words. Never infer tools or practices '
+    '(CI/CD, testing, monitoring) that it does not mention. Never invent experience.'
+)
 
 
-def llm_analysis(resume_text, job_text):
+def analyze(resume_text, job_text):
+    """One AI pass that returns the requirements the job lists and which ones the resume proves."""
     client = Groq(api_key=os.getenv('GROQ_API_KEY'))
-    system = (
-        'You are a strict technical recruiter. Compare the resume with the job '
-        'description. Reply ONLY with JSON in this exact shape: '
-        '{"score": <0-100 integer>, "summary": "<2 sentences>", '
-        '"strengths": ["..."], "missing_skills": ["..."], "tips": ["..."]}. '
-        'Use only facts present in the resume. Do not invent experience.'
-    )
     user = f'RESUME:\n{resume_text[:6000]}\n\nJOB DESCRIPTION:\n{job_text[:6000]}'
     resp = client.chat.completions.create(
         model=MODEL,
         messages=[
-            {'role': 'system', 'content': system},
+            {'role': 'system', 'content': ANALYSIS_PROMPT},
             {'role': 'user', 'content': user},
         ],
         response_format={'type': 'json_object'},
-        temperature=0.2,
+        temperature=0.1,
     )
-    return json.loads(resp.choices[0].message.content)
+    data = json.loads(resp.choices[0].message.content)
 
-def generate_cover_note(resume_text, job_description, tone='professional'):
-    client = Groq(api_key=os.getenv('GROQ_API_KEY'))
-    tones = {
-        'professional': 'Plain, direct and polite. No exclamation marks.',
-        'friendly': 'Warm and natural, like a message to a person you respect. At most one exclamation mark.',
-        'confident': 'Assured and specific. State what you built and what it did, without bragging words.',
+    haystack = f' {_norm(resume_text)} '
+    matched, missing, total, got = [], [], 0.0, 0.0
+    for req in (data.get('requirements') or [])[:15]:
+        options = [str(o).strip() for o in (req.get('options') or []) if str(o).strip()][:6]
+        if not options:
+            continue
+        weight = 0.5 if req.get('importance') == 'preferred' else 1.0
+        # The AI must prove it: the quoted evidence has to exist in the resume.
+        met = bool(req.get('met')) and _quoted_in(req.get('evidence'), haystack)
+        total += weight
+        if met:
+            got += weight
+            found = next((o for o in options if f' {_norm(o)} ' in haystack), options[0])
+            matched.append(found.lower())
+        else:
+            missing += [o.lower() for o in options]
+
+    coverage = round(got / total * 100) if total else 0
+    try:
+        ai_score = max(0, min(100, int(data.get('score', 0))))
+    except (TypeError, ValueError):
+        ai_score = 0
+    return {
+        'coverage': coverage,
+        'ai_score': ai_score,
+        'matched': list(dict.fromkeys(matched)),
+        'missing': list(dict.fromkeys(missing)),
+        'summary': data.get('summary', ''),
+        'strengths': data.get('strengths', []),
+        'tips': data.get('tips', []),
     }
-    system = (
-        'You write a short note that a job applicant sends with their application. '
-        'You are given their resume and the job description.\n\n'
-        'How to write it:\n'
-        '- 80 to 110 words, in 2 short paragraphs, then the name on its own line.\n'
-        '- Start with "Hi," on its own line.\n'
-        '- First sentence: the one skill or project from the resume that fits this job best, '
-        'and what it did. Name the job title from the job description if it has one.\n'
-        '- Then at most two more pieces of evidence from the resume, each tied to something the job asks for.\n'
-        '- If the job asks for an important skill that is not in the resume, say so in one honest clause '
-        'and that the applicant is learning it. Mention at most one such skill.\n'
-        '- Last sentence: a plain close, such as being glad to talk further.\n'
-        '- End with the applicant name exactly as written in the resume.\n\n'
-        'Rules:\n'
-        '- Use ONLY facts found in the resume. Never invent experience, skills, numbers or companies.\n'
-        '- Do not mention links, websites, a portfolio, GitHub, email or phone numbers.\n'
-        '- Do not list skills in a row. Do not repeat the job description back.\n'
-        '- Avoid filler such as "I am excited to apply", "passionate", "I believe I am a great fit", '
-        '"aligns with", "I look forward to contributing".\n'
-        '- No placeholders like [Company]. No headings, no bullet points, plain text only.\n\n'
-        f'Tone: {tones.get(tone, tones["professional"])}'
-    )
-    user = f'RESUME:\n{resume_text[:6000]}\n\nJOB DESCRIPTION:\n{job_text[:6000]}'
-    resp = client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {'role': 'system', 'content': system},
-            {'role': 'user', 'content': user},
-        ],
-        response_format={'type': 'json_object'},
-        temperature=0.2,
-    )
-    return json.loads(resp.choices[0].message.content)
+
 
 def generate_cover_note(resume_text, job_description, tone='professional'):
     client = Groq(api_key=os.getenv('GROQ_API_KEY'))
