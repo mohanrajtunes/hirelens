@@ -108,3 +108,5 @@ Not tested: real backend, real phone.
 - v7.1: closing band on Home shows a small tracker board (one card moves Saved to Applied). App navigation is at the top from 900px wide, bottom dock on phones. Resume page reveals behind a scan line on load. Home animation rebuilds when the window crosses 1000px (`wide` state in Home.jsx).
 - v7.2: job post on the result page is collapsed with a 'Show full post' button; cover note prompt in backend/ai/services.py rewritten (80-110 words, no links, leads with best match, one honest gap).
 - v8 (12 Nov): public /sample page (pages/Sample.jsx, lib/sample.js) runs a prepared match with no sign-in; landing has 'Try a sample match' buttons and a skills gap preview section (.x-gap).
+- v8.1: hero content is never hidden on load (transform-only intro) and hero height is capped, so previews/screenshots are not a blank yellow page; new 'How it works' section (.x-how) after the hero.
+- v8.2: /built page (pages/Built.jsx, styles/built.css): animated request diagram, API routes, decisions, stack. Linked from the Home footer only.

@@ -33,6 +33,11 @@ const GAP = [
   ['Redis', 2],
   ['Celery', 1],
 ]
+const HOW = [
+  ['Upload your resume', 'One PDF. It is read once and kept in your account.', 'M12 16V5m0 0-4 4m4-4 4 4M5 19h14'],
+  ['Paste a job description', 'Copy the full post from any job site.', 'M8 5h8v3H8zM6 6.500H5v14h14v-14h-1M8.500 12.500h7m-7 4h5'],
+  ['See where you stand', 'A score, the skills you are missing and a cover note. Save the job to your tracker.', 'M5 12.500l4.500 4.500L19 7.500'],
+]
 const BEATS = [
   ['Every requirement, checked.', 'HireLens reads the job description and checks each requirement against your resume.'],
   ['One clear score.', 'A single number out of 100, with the skills you already have and the ones you are missing.'],
@@ -169,16 +174,11 @@ export default function Home() {
         }
       })
 
-      // Page load: navbar drops in, the heading rises line by line, the screen rises into place.
-      gsap.from('.x-nav', { y: -90, autoAlpha: 0, duration: 1.1, ease: 'expo.out', delay: 0.1 })
-      SplitText.create('.x-hero h1', {
-        type: 'lines',
-        mask: 'lines',
-        autoSplit: true,
-        onSplit: (self) => gsap.from(self.lines, { yPercent: 110, duration: 1.25, ease: 'expo.out', stagger: 0.09, delay: 0.2 }),
-      })
-      gsap.from('.x-eyebrow, .x-sub, .x-hero .x-cta, .x-facts', { y: 26, autoAlpha: 0, duration: 1, ease: 'expo.out', stagger: 0.08, delay: 0.55 })
-      gsap.from('.x-stage', { y: 90, autoAlpha: 0, duration: 1.5, ease: 'expo.out', delay: 0.45 })
+      // Page load: nothing is ever hidden, so the page reads at once (and in previews
+      // and screenshots). The pieces only settle into place.
+      gsap.from('.x-nav', { y: -30, duration: 0.9, ease: 'expo.out' })
+      gsap.from('.x-eyebrow, .x-hero h1, .x-sub, .x-hero .x-cta, .x-facts', { y: 28, duration: 1, ease: 'expo.out', stagger: 0.06 })
+      gsap.from('.x-stage', { y: 70, scale: 0.96, duration: 1.3, ease: 'expo.out' })
       gsap.to('.x-progress', { scaleX: 1, ease: 'none', scrollTrigger: { trigger: el, start: 'top top', end: 'bottom bottom', scrub: 0.2 } })
 
       let cleanTilt = () => {}
@@ -187,7 +187,6 @@ export default function Home() {
         const beats = all('.x-beat')
         gsap.set(beats, { autoAlpha: 0, y: 44 })
         gsap.set('.x-screen', { rotationY: -10, rotationX: 5 })
-        gsap.from('.x-hint', { autoAlpha: 0, duration: 1, delay: 1.6 })
         gsap.to('.x-hint svg', { y: 5, duration: 0.9, ease: 'sine.inOut', yoyo: true, repeat: -1 })
 
         // the screen leans a little toward the cursor
@@ -219,7 +218,7 @@ export default function Home() {
         gsap.from('.x-beat', { y: 30, autoAlpha: 0, duration: 1, ease: 'expo.out', stagger: 0.1, scrollTrigger: { trigger: '.x-beats', start: 'top 82%', once: true } })
       }
 
-      all('.x-dark h2, .x-gap h2, .x-end h2').forEach((h) =>
+      all('.x-how h2, .x-dark h2, .x-gap h2, .x-end h2').forEach((h) =>
         SplitText.create(h, {
           type: 'lines',
           mask: 'lines',
@@ -241,6 +240,12 @@ export default function Home() {
           .to(card, { scale: 1, rotation: 0, boxShadow: '0 0 0 0 rgb(13 17 16 / 0)', duration: 0.3, ease: 'power2.out' })
           .to(q('.x-cols > div:nth-child(1) .x-card:not(.x-move)'), { y: () => -(card.offsetHeight + 8), duration: 0.5, ease: 'power3.out' }, '-=0.6')
       }
+      // How it works: the line draws across, then each step lands on it.
+      const howAt = { trigger: '.x-how__list', start: 'top 80%', once: true }
+      gsap.fromTo('.x-how__list', { '--draw': 0 }, { '--draw': 1, duration: 1.4, ease: 'expo.inOut', scrollTrigger: howAt })
+      gsap.from('.x-how__list li', { y: 40, autoAlpha: 0, duration: 0.9, ease: 'expo.out', stagger: 0.16, delay: 0.15, scrollTrigger: howAt })
+      gsap.from('.x-how__icon', { scale: 0, rotation: -40, duration: 0.9, ease: 'back.out(2)', stagger: 0.16, delay: 0.3, scrollTrigger: howAt })
+      gsap.from('.x-how__icon path', { drawSVG: 0, duration: 1, ease: 'power2.out', stagger: 0.16, delay: 0.55, scrollTrigger: howAt })
       const gapAt = { trigger: '.x-gapscreen', start: 'top 78%', once: true }
       gsap.from('.x-gapscreen', { y: 60, autoAlpha: 0, duration: 1.1, ease: 'expo.out', scrollTrigger: gapAt })
       gsap.from('.x-row', { x: -24, autoAlpha: 0, duration: 0.8, ease: 'expo.out', stagger: 0.1, delay: 0.2, scrollTrigger: gapAt })
@@ -399,6 +404,27 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="x-how">
+          <div className="x-wrap">
+            <p className="x-eyebrow">How it works</p>
+            <h2>Three steps, about a minute.</h2>
+            <ol className="x-how__list">
+              {HOW.map(([t, d, icon], i) => (
+                <li key={t}>
+                  <span className="x-how__icon" aria-hidden="true">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d={icon} />
+                    </svg>
+                  </span>
+                  <span className="x-n x-mono">0{i + 1}</span>
+                  <b>{t}</b>
+                  <em>{d}</em>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
         <section className="x-dark">
           <div className="x-wrap">
             <div>
@@ -509,6 +535,8 @@ export default function Home() {
       <footer className="x-wrap x-foot">
         <span>© 2026 HireLens</span>
         <span>
+          <TLink to="/built">How it is built</TLink>
+          {'  ·  '}
           Built by{' '}
           <a href="https://github.com/mohanrajtunes" target="_blank" rel="noreferrer">
             Mohanraj S
