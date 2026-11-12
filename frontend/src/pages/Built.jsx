@@ -9,8 +9,8 @@ import '../styles/built.css'
 const STEPS = [
   ['The browser sends the job', 'The React app posts the job description and the id of a saved resume to POST /api/ai/match/, with a short-lived access token.'],
   ['The API checks the request', 'Django REST Framework verifies the JWT, applies a rate limit and loads the resume text that was extracted when the PDF was uploaded.'],
-  ['Two checks run on the same text', 'A keyword check finds the skills the job asks for and looks for each one in the resume. An LLM reads both texts and replies in strict JSON: a score, strengths, gaps and tips.'],
-  ['One score comes back', 'The two scores are combined, 40% keywords and 60% LLM, and returned as JSON. The page marks up the post and fills the score ring.'],
+  ['The LLM reads both, then has to prove it', 'An LLM lists what the job asks for and, for each requirement, copies the exact words from the resume that show it. The API then checks that those words really are in the resume. A claim with no proof counts as missing.'],
+  ['One score comes back', 'The share of requirements proven (40%) is combined with the LLM\'s overall fit score (60%) and returned as JSON. The page marks up the post and fills the score ring.'],
 ]
 const ROUTES = [
   ['POST', '/api/auth/register/', 'Create an account. Passwords go through Django\'s validators.'],
@@ -20,7 +20,7 @@ const ROUTES = [
   ['GET', '/api/auth/me/', 'The signed-in user.'],
   ['GET POST', '/api/resumes/', 'List resumes, or upload a PDF (2 MB limit). Text is extracted once with pypdf.'],
   ['DELETE', '/api/resumes/:id/', 'Remove a resume. Users can only reach their own.'],
-  ['POST', '/api/ai/match/', 'Keyword check plus LLM review. Returns score, matched and missing skills, tips.'],
+  ['POST', '/api/ai/match/', 'LLM review plus proof check. Returns score, matched and missing skills, tips.'],
   ['POST', '/api/ai/cover-note/', 'Writes a note in the chosen tone, using only facts from the resume.'],
   ['GET POST', '/api/jobs/', 'The tracker: list applications or save one with its score and note.'],
   ['PATCH DELETE', '/api/jobs/:id/', 'Move an application to another stage, edit it or delete it.'],
@@ -33,7 +33,7 @@ const STACK = [
   ['Hosting', 'Vercel (frontend), Render (API)'],
 ]
 const WHY = [
-  ['Two scores, not one', 'An LLM alone gives slightly different numbers each run. Keywords alone miss context. Mixing them keeps the score steady and still sensible.'],
+  ['Proof, not trust', 'An LLM alone can claim a skill the resume never mentions. Every match must quote the resume, and the code verifies the quote, so invented matches are thrown out.'],
   ['Notes that cannot invent', 'The cover note prompt allows only facts found in the resume and admits at most one missing skill, so it never claims experience the person lacks.'],
   ['Read the PDF once', 'Resume text is extracted at upload and stored, so every later match is one database read and one LLM call.'],
   ['Limits where money is spent', 'AI routes are limited per user per hour, and sign-in per minute, so the LLM quota and accounts are protected.'],
@@ -43,8 +43,8 @@ const WHY = [
 const NODES = [
   ['browser', 20, 160, 160, 'Browser', 'React app'],
   ['api', 270, 160, 170, 'Django API', 'JWT, rate limit'],
-  ['kw', 540, 50, 180, 'Keyword check', 'skill list, regex'],
-  ['llm', 540, 270, 180, 'LLM review', 'Groq, JSON only'],
+  ['kw', 540, 50, 180, 'Proof check', 'quotes verified'],
+  ['llm', 540, 270, 180, 'LLM review', 'requirements, JSON'],
   ['score', 820, 160, 160, 'Final score', '40% + 60%'],
 ]
 const PATHS = {
@@ -148,7 +148,7 @@ export default function Built() {
           <p className="b-lead">One request, two checks, one score. This page is for anyone who wants to see the engineering behind HireLens.</p>
 
           <div className="b-flow">
-            <svg className="b-svg" viewBox="0 0 1000 400" role="img" aria-label="Diagram: the browser calls the Django API, which runs a keyword check and an LLM review and returns one score">
+            <svg className="b-svg" viewBox="0 0 1000 400" role="img" aria-label="Diagram: the browser calls the Django API, which runs an LLM review and a proof check and returns one score">
               {Object.entries(PATHS).map(([id, d]) => (
                 <path key={id} id={id} className={`b-wire${id === 'p6' ? ' b-wire--back' : ''}`} d={d} />
               ))}

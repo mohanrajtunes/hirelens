@@ -21,16 +21,14 @@ An AI job-application assistant. Upload your resume, paste a job description, an
 
 ## How the score works
 
-The final score combines two signals:
-
 ```
-score = round(0.4 × keyword match + 0.6 × AI assessment)
+score = round(0.4 × requirements proven + 0.6 × overall fit)
 ```
 
-- **Keyword match (40%)**: deterministic overlap between skills in the job post and the resume. Fast and repeatable.
-- **AI assessment (60%)**: an LLM judges how well the experience fits the role, which keywords alone miss.
+- **Requirements proven (40%)**: the LLM lists what the job asks for. Options like "AWS, Azure, or GCP" count as one requirement, and "nice to have" items count half. For each one it must quote the exact words from the resume that show it, and the API verifies the quote exists. No proof, no match.
+- **Overall fit (60%)**: the LLM's judgement of how well the experience fits the role.
 
-Mixing the two keeps the score stable and still sensitive to context.
+There is no fixed keyword list, so it works for any job, and the model cannot credit a skill the resume never mentions.
 
 ## Architecture
 
