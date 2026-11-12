@@ -274,6 +274,12 @@ export default function Home() {
           HireLens
         </TLink>
         <div className="x-nav__r">
+          <TLink to="/built" className="x-link x-link--wide">
+            How it's built
+          </TLink>
+          <TLink to="/sample" className="x-link x-link--wide">
+            Sample match
+          </TLink>
           {status !== 'in' && (
             <TLink to="/login" className="x-link">
               Sign in
@@ -304,6 +310,9 @@ export default function Home() {
                     Try a sample match
                   </TLink>
                 </div>
+                <TLink to="/built" className="x-built">
+                  See how the API works <Arrow />
+                </TLink>
                 <div className="x-facts">
                   <div>
                     <b>Clear score</b>One match score out of 100

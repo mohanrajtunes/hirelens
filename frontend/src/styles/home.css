@@ -182,3 +182,9 @@
 }
 /* without the scroll animation on a wide screen, the step text is not needed */
 @media (min-width: 1000px) { .x-root:not(.is-pin) .x-beats { display: none; } }
+
+/* extra navbar links, hidden on small phones */
+@media (max-width: 720px) { .x-link--wide { display: none; } }
+.x-foot a { text-underline-offset: 3px; }
+.x-built{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font-weight:600;font-size:15px;color:inherit;border-bottom:2px solid currentColor;padding-bottom:2px;text-decoration:none}
+.x-built svg{width:14px;height:14px}
