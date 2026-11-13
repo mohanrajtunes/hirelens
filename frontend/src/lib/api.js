@@ -37,7 +37,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// The access token lasts 5 minutes. On a 401, swap the refresh token for a
+// The access token lasts 15 minutes. On a 401, swap the refresh token for a
 // new one once and repeat the request, so the user is not thrown out mid-task.
 let refreshing = null
 api.interceptors.response.use(
