@@ -9,7 +9,7 @@ An AI job-application assistant. Upload your resume, paste a job description, an
 
 > The API runs on a free tier and sleeps when idle. The first request after a while can take about 30 seconds.
 
-<!-- Add screenshots here: landing, match result, skills gap, tracker -->
+![HireLens match result with score, skills gap and strengths](screenshots/match.png)
 
 ## Features
 
@@ -82,6 +82,16 @@ npm run dev
 
 Set `VITE_API_URL` (for example `http://127.0.0.1:8000/api`) if the API is not at the default address.
 
+## Tests
+
+```bash
+cd backend
+set DJANGO_DEBUG=1   # macOS/Linux: export DJANGO_DEBUG=1
+python manage.py test
+```
+
+21 tests cover sign-up and login, PDF upload checks, users only seeing their own data, and the rule that the AI can only claim skills it can quote from the resume. They run on every push with GitHub Actions.
+
 ## Deploy
 
 - **Backend (Render):** root directory `backend`, build command `./build.sh`, start command `gunicorn config.wsgi`. Set `DATABASE_URL`, `DJANGO_SECRET_KEY`, `GROQ_API_KEY`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS` (origins with no trailing slash).
@@ -104,12 +114,6 @@ hirelens/
 
 Built by [Mohanraj S](https://github.com/mohanrajtunes).
 
-## Tests
+## License
 
-```bash
-cd backend
-set DJANGO_DEBUG=1   # macOS/Linux: export DJANGO_DEBUG=1
-python manage.py test
-```
-
-21 tests cover sign-up and login, PDF upload checks, users only seeing their own data, and the rule that the AI can only claim skills it can quote from the resume.
+MIT
