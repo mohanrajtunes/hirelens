@@ -1,5 +1,7 @@
 # HireLens
 
+[![tests](https://github.com/mohanrajtunes/hirelens/actions/workflows/tests.yml/badge.svg)](https://github.com/mohanrajtunes/hirelens/actions/workflows/tests.yml)
+
 An AI job-application assistant. Upload your resume, paste a job description, and HireLens shows your match score, the skills you are missing, and a cover note written from your own experience. A built-in tracker keeps your applications in one place.
 
 **Live:** https://hirelens-seven-smoky.vercel.app
@@ -101,3 +103,13 @@ hirelens/
 ## Author
 
 Built by [Mohanraj S](https://github.com/mohanrajtunes).
+
+## Tests
+
+```bash
+cd backend
+set DJANGO_DEBUG=1   # macOS/Linux: export DJANGO_DEBUG=1
+python manage.py test
+```
+
+21 tests cover sign-up and login, PDF upload checks, users only seeing their own data, and the rule that the AI can only claim skills it can quote from the resume.
